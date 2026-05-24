@@ -1,72 +1,66 @@
 import React from 'react';
-import { Box, Typography, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, IconButton } from '@mui/material';
-import FolderIcon from '@mui/icons-material/Folder';
-import EditIcon from '@mui/icons-material/Edit';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { Database, Plus, Search, Code, Globe, Terminal, Layers, MoreVertical } from 'lucide-react';
 
-const mockQuestions = [
-  { id: 1, title: 'Two Sum', difficulty: 'Easy', topic: 'Arrays', timesUsed: 45 },
-  { id: 2, title: 'LRU Cache', difficulty: 'Medium', topic: 'Design', timesUsed: 32 },
-  { id: 3, title: 'Merge K Sorted Lists', difficulty: 'Hard', topic: 'Linked Lists', timesUsed: 18 },
-  { id: 4, title: 'Valid Parentheses', difficulty: 'Easy', topic: 'Stacks', timesUsed: 50 },
-  { id: 5, title: 'Word Search II', difficulty: 'Hard', topic: 'Trie', timesUsed: 12 },
-];
-
-const getDifficultyColor = (difficulty) => {
-  switch (difficulty) {
-    case 'Easy': return 'success';
-    case 'Medium': return 'warning';
-    case 'Hard': return 'error';
-    default: return 'default';
-  }
-};
-
-export const QuestionBank = () => {
+const QuestionBank = () => {
   return (
-    <Box sx={{ minHeight: '100vh', pb: 8, pt: 4 }}>
-      <Container maxWidth="lg">
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, gap: 2 }}>
-          <FolderIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight="800">Question Bank</Typography>
-        </Box>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-3xl text-white font-display">Question Bank</h2>
+          <p className="text-slate-400 text-sm">Manage your curated list of technical and behavioral questions used across the platform.</p>
+        </div>
+        <button className="btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Add New Question
+        </button>
+      </div>
 
-        <Paper sx={{ width: '100%', mb: 2, borderRadius: 4, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-          <TableContainer>
-            <Table sx={{ minWidth: 650 }} aria-label="question bank table">
-              <TableHead sx={{ bgcolor: 'background.default' }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Title</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Difficulty</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Topic</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Times Used</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {mockQuestions.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { bgcolor: 'action.hover' } }}
-                  >
-                    <TableCell component="th" scope="row">#{row.id}</TableCell>
-                    <TableCell sx={{ fontWeight: 500 }}>{row.title}</TableCell>
-                    <TableCell>
-                      <Chip label={row.difficulty} size="small" color={getDifficultyColor(row.difficulty)} sx={{ fontWeight: 'bold' }} />
-                    </TableCell>
-                    <TableCell>{row.topic}</TableCell>
-                    <TableCell align="right">{row.timesUsed}</TableCell>
-                    <TableCell align="center">
-                      <IconButton color="primary" size="small"><PlayArrowIcon /></IconButton>
-                      <IconButton color="secondary" size="small"><EditIcon /></IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      </Container>
-    </Box>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[
+          { label: 'All', count: 1250, active: true },
+          { label: 'Frontend', count: 432, active: false },
+          { label: 'Backend', count: 388, active: false },
+          { label: 'DevOps', count: 124, active: false },
+        ].map((tab, i) => (
+          <button key={i} className={`p-6 rounded-[24px] text-left transition-all ${tab.active ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-500/20' : 'glass text-slate-500 hover:text-white'}`}>
+            <p className="text-sm font-bold mb-1">{tab.label}</p>
+            <p className={`text-[10px] font-bold uppercase tracking-widest ${tab.active ? 'text-emerald-100' : 'text-slate-600'}`}>{tab.count} Questions</p>
+          </button>
+        ))}
+      </div>
+
+      <div className="glass-card rounded-[32px] overflow-hidden">
+        <div className="p-0 divide-y divide-slate-900">
+          {[
+            { title: 'Explain the difference between let, const, and var.', category: 'Frontend', difficulty: 'Easy', icon: Globe },
+            { title: 'Design a scalable notification system.', category: 'System Design', difficulty: 'Hard', icon: Layers },
+            { title: 'Implement a LRU Cache.', category: 'Data Structures', difficulty: 'Medium', icon: Terminal },
+            { title: 'What is CAP Theorem?', category: 'Backend', difficulty: 'Medium', icon: Code },
+          ].map((q, i) => (
+            <div key={i} className="p-6 flex items-center justify-between group hover:bg-slate-900/30 transition-all cursor-pointer">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-slate-500 group-hover:text-emerald-500 transition-all">
+                  <q.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white mb-1">{q.title}</h4>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{q.category}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${q.difficulty === 'Easy' ? 'bg-emerald-500/10 text-emerald-500' : q.difficulty === 'Medium' ? 'bg-blue-500/10 text-blue-500' : 'bg-red-500/10 text-red-500'}`}>
+                      {q.difficulty}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button className="p-2 rounded-lg glass text-slate-600 hover:text-white transition-all">
+                <MoreVertical className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };
+
+export default QuestionBank;

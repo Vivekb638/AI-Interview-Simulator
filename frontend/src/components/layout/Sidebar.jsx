@@ -1,142 +1,81 @@
 import React from 'react';
-import { styled, useTheme } from '@mui/material/styles';
-import { Drawer as MuiDrawer, List, ListItem, ListItemIcon, ListItemText, Box, Divider, Tooltip } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import PeopleIcon from '@mui/icons-material/People';
-import AnalyticsIcon from '@mui/icons-material/Analytics';
-import FolderIcon from '@mui/icons-material/Folder';
-import SettingsIcon from '@mui/icons-material/Settings';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import HelpOutlinedIcon from '@mui/icons-material/HelpOutlined';
+import { NavLink, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { 
+  LayoutDashboard, 
+  Users, 
+  BarChart3, 
+  ShieldCheck, 
+  BookOpen, 
+  Settings, 
+  HelpCircle,
+  LogOut,
+  Zap
+} from 'lucide-react';
 
-const drawerWidth = 260;
-
-const openedMixin = (theme) => ({
-  width: drawerWidth,
-  transition: theme.transitions.create('width', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.enteringScreen,
-  }),
-  overflowX: 'hidden',
-  borderRight: `1px solid ${theme.palette.divider}`,
-  backgroundColor: theme.palette.background.paper,
-});
-
-const closedMixin = (theme) => ({
-  transition: theme.transitions.create('width', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  overflowX: 'hidden',
-  width: `calc(${theme.spacing(8)} + 1px)`,
-  [theme.breakpoints.up('sm')]: {
-    width: `calc(${theme.spacing(9)} + 1px)`,
-  },
-  borderRight: `1px solid ${theme.palette.divider}`,
-  backgroundColor: theme.palette.background.paper,
-});
-
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
-  ({ theme, open }) => ({
-    width: drawerWidth,
-    flexShrink: 0,
-    whiteSpace: 'nowrap',
-    boxSizing: 'border-box',
-    ...(open && {
-      ...openedMixin(theme),
-      '& .MuiDrawer-paper': openedMixin(theme),
-    }),
-    ...(!open && {
-      ...closedMixin(theme),
-      '& .MuiDrawer-paper': closedMixin(theme),
-    }),
-  }),
-);
-
-const Sidebar = ({ drawerOpen }) => {
-  const location = useLocation();
-
-  const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Practice (AI)', icon: <SmartToyIcon />, path: '/practice' },
-    { text: 'Host / Join', icon: <PeopleIcon />, path: '/host-join' },
-    { text: 'History & Reports', icon: <AnalyticsIcon />, path: '/history' },
-    { text: 'Analytics Hub', icon: <BarChartIcon />, path: '/analytics-hub' },
-    { text: 'Question Bank', icon: <FolderIcon />, path: '/questions' },
+const Sidebar = ({ role = 'Recruiter' }) => {
+  const recruiterLinks = [
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/recruiter/dashboard' },
+    { name: 'Candidates', icon: Users, path: '/recruiter/candidates' },
+    { name: 'Live Monitoring', icon: ShieldCheck, path: '/recruiter/live-monitoring' },
+    { name: 'Analytics', icon: BarChart3, path: '/recruiter/analytics' },
+    { name: 'Question Bank', icon: BookOpen, path: '/recruiter/questions' },
   ];
 
-  const bottomMenuItems = [
-    { text: 'Support', icon: <HelpOutlinedIcon />, path: 'mailto:vineet@gmail.com?subject=InterviewPro Support Request' },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
+  const studentLinks = [
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/student/dashboard' },
+    { name: 'AI Interview', icon: Users, path: '/student/interview' },
+    { name: 'Practice Arena', icon: Zap, path: '/student/practice' },
+    { name: 'Performance Reports', icon: BarChart3, path: '/student/reports' },
   ];
 
-  const renderListItem = (item) => {
-    const isSelected = location.pathname.startsWith(item.path);
-    const content = (
-      <ListItem 
-        button 
-        key={item.text} 
-        {...(item.path.startsWith('mailto:') 
-          ? { component: 'a', href: item.path } 
-          : { component: Link, to: item.path })}
-        sx={{
-          minHeight: 48,
-          justifyContent: drawerOpen ? 'initial' : 'center',
-          px: 2.5,
-          borderRadius: 2,
-          mx: 1,
-          mb: 0.5,
-          bgcolor: isSelected ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-          color: isSelected ? 'primary.main' : 'text.secondary',
-          '&:hover': {
-            bgcolor: isSelected ? 'rgba(79, 70, 229, 0.12)' : 'action.hover',
-          }
-        }}
-      >
-        <ListItemIcon 
-          sx={{ 
-            minWidth: 0, 
-            mr: drawerOpen ? 3 : 'auto', 
-            justifyContent: 'center',
-            color: isSelected ? 'primary.main' : 'inherit'
-          }}
-        >
-          {item.icon}
-        </ListItemIcon>
-        <ListItemText 
-          primary={item.text} 
-          sx={{ opacity: drawerOpen ? 1 : 0 }} 
-          primaryTypographyProps={{ 
-            fontWeight: isSelected ? 600 : 500,
-            fontSize: '0.95rem'
-          }} 
-        />
-      </ListItem>
-    );
-
-    return drawerOpen ? content : <Tooltip key={item.text} title={item.text} placement="right">{content}</Tooltip>;
-  };
+  const links = role === 'Recruiter' ? recruiterLinks : studentLinks;
 
   return (
-    <Drawer variant="permanent" open={drawerOpen}>
-      {/* Spacer for TopHeader */}
-      <Box sx={{ height: 64 }} /> 
-      
-      <Box sx={{ overflowX: 'hidden', overflowY: 'auto', flexGrow: 1, py: 2 }}>
-        <List>
-          {menuItems.map(renderListItem)}
-        </List>
-      </Box>
+    <div className="w-72 h-screen fixed left-0 top-0 bg-zinc-950 border-r border-zinc-900 flex flex-col p-6">
+      <Link to="/" className="flex items-center gap-3 mb-12 px-2">
+        <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
+          <Zap className="w-4 h-4 text-white fill-white" />
+        </div>
+        <span className="text-xl font-display font-bold text-white tracking-tight">Interview<span className="text-violet-500">.ai</span></span>
+      </Link>
 
-      <Box sx={{ pb: 2 }}>
-        <Divider sx={{ mb: 2, mx: 2 }} />
-        <List>
-          {bottomMenuItems.map(renderListItem)}
-        </List>
-      </Box>
-    </Drawer>
+      <div className="flex-1 space-y-2">
+        <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em] px-2 mb-4">Main Menu</p>
+        {links.map((link) => (
+          <NavLink
+            key={link.name}
+            to={link.path}
+            className={({ isActive }) => 
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+                isActive 
+                  ? 'bg-violet-600/10 text-violet-500 border border-violet-500/20' 
+                  : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
+              }`
+            }
+          >
+            <link.icon className="w-5 h-5" />
+            <span className="font-medium">{link.name}</span>
+          </NavLink>
+        ))}
+      </div>
+
+      <div className="pt-8 border-t border-zinc-900 space-y-2">
+        <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em] px-2 mb-4">Support</p>
+        <Link to="/settings" className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300 transition-all">
+          <Settings className="w-5 h-5" />
+          <span className="font-medium">Settings</span>
+        </Link>
+        <Link to="/help" className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300 transition-all">
+          <HelpCircle className="w-5 h-5" />
+          <span className="font-medium">Help Center</span>
+        </Link>
+        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500/60 hover:bg-red-500/5 hover:text-red-500 transition-all">
+          <LogOut className="w-5 h-5" />
+          <span className="font-medium">Logout</span>
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -1,0 +1,2 @@
+// This directory is automatically used by Multer in Node.js to store temporary uploaded files (e.g., Resumes or audio clips).
+// This .gitkeep ensures the directory is tracked by Git, but we will ignore the actual files inside it via .gitignore.

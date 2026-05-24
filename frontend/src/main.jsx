@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { BrowserRouter } from 'react-router-dom';
+import { store } from './redux/store';
 import App from './App.jsx';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { darkTheme } from './theme.js';
-import { AuthProvider } from './context/AuthContext.jsx';
+import './index.css';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -19,12 +19,9 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '2rem', color: 'red', fontFamily: 'sans-serif' }}>
-          <h2>Application Error</h2>
-          <p>{this.state.message}</p>
-          {this.state.message.includes('URL') && (
-            <h3>⚠️ This is likely because your VITE_SUPABASE_URL in frontend/.env is still set to 'YOUR_SUPABASE_URL'. React crashed trying to parse it as a real link. Please insert your actual Supabase Keys!</h3>
-          )}
+        <div style={{ padding: '2rem', color: '#EF4444', backgroundColor: '#0A0A0A', height: '100vh', fontFamily: 'Inter, sans-serif' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>Application Error</h2>
+          <p style={{ color: '#9CA3AF' }}>{this.state.message}</p>
         </div>
       );
     }
@@ -34,13 +31,12 @@ class ErrorBoundary extends React.Component {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <ErrorBoundary>
-        <AuthProvider>
+    <Provider store={store}>
+      <BrowserRouter>
+        <ErrorBoundary>
           <App />
-        </AuthProvider>
-      </ErrorBoundary>
-    </ThemeProvider>
+        </ErrorBoundary>
+      </BrowserRouter>
+    </Provider>
   </React.StrictMode>
 );

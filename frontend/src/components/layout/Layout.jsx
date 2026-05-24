@@ -3,6 +3,7 @@ import { Box, AppBar, Toolbar, Typography, Button } from '@mui/material';
 import { useLocation, Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
+import Footer from './Footer';
 import { useAuth } from '../../context/AuthContext';
 
 const Layout = ({ children }) => {
@@ -51,6 +52,8 @@ const Layout = ({ children }) => {
         component="main" 
         sx={{ 
           flexGrow: 1, 
+          display: 'flex',
+          flexDirection: 'column',
           p: 3, 
           mt: 8, 
           width: { sm: `calc(100% - ${drawerOpen ? 260 : 72}px)` },
@@ -60,7 +63,10 @@ const Layout = ({ children }) => {
           }),
         }}
       >
-        {children}
+        <Box sx={{ flexGrow: 1 }}>
+          {children}
+        </Box>
+        <Footer />
       </Box>
     </Box>
   );

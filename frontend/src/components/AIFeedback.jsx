@@ -57,10 +57,13 @@ const AIFeedback = ({ currentCode, track = 'General', diff = 'Mid-Level' }) => {
   const [phase, setPhase] = useState('technical');
   
   const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
+  const wsRef = useRef(null);
 
   useEffect(() => {
     loadQuestionForPhase('technical');
+    return () => {
+      if (wsRef.current) wsRef.current.close();
+    };
   }, []);
 
   const loadQuestionForPhase = (newPhase) => {
@@ -94,20 +97,40 @@ const AIFeedback = ({ currentCode, track = 'General', diff = 'Mid-Level' }) => {
       }
       
       mediaRecorderRef.current = new MediaRecorder(stream, options);
-      audioChunksRef.current = [];
 
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      // Extract WS URL correctly
+      let wsUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+      wsUrl = wsUrl.replace('http://', 'ws://').replace('https://', 'wss://');
+      wsRef.current = new WebSocket(`${wsUrl}/ws/transcribe`);
+
+      wsRef.current.onopen = () => {
+        mediaRecorderRef.current.ondataavailable = (event) => {
+          if (event.data.size > 0 && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(event.data);
+          }
+        };
+
+        mediaRecorderRef.current.onstop = () => {
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorderRef.current.start(1000); // 1-second chunks
+        setIsRecording(true);
       };
 
-      mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        await handleAudioUpload(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
+      wsRef.current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.text !== undefined) setTranscription(data.text);
+          if (data.error) console.error("WS Error:", data.error);
+        } catch (e) {
+          console.error("WS Message Error:", e);
+        } finally {
+          setIsProcessing(false);
+          if (wsRef.current) wsRef.current.close();
+        }
       };
 
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
     } catch (err) {
       console.error("Microphone access denied:", err);
       setTranscription("Microphone access was denied or not found.");
@@ -118,36 +141,23 @@ const AIFeedback = ({ currentCode, track = 'General', diff = 'Mid-Level' }) => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-    }
-  };
-
-  const handleAudioUpload = async (audioBlob) => {
-    setIsProcessing(true);
-    try {
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'speech.webm');
-      
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-      const res = await fetch(`${backendUrl}/api/transcribe`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (data.text) setTranscription(data.text);
-    } catch (err) {
-      console.error("Transcription failed", err);
-    } finally {
-      setIsProcessing(false);
+      setIsProcessing(true); // Wait for transcription response
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ text: "STOP" }));
+      }
     }
   };
 
   const requestEvaluation = async () => {
     setIsProcessing(true);
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
       const res = await fetch(`${backendUrl}/api/evaluate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Internal-Secret': 'dev_secret_key'
+        },
         body: JSON.stringify({ 
           code: currentCode, 
           question: activeQuestion, 

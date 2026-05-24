@@ -1,126 +1,146 @@
-import React, { useState, useMemo, createContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline, Box, CircularProgress } from '@mui/material';
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { supabase } from './lib/supabase';
+import { setCredentials, logout } from './redux/slices/authSlice';
+import socketClient from './services/socketClient';
 
-import { useAuth } from './context/AuthContext';
-import Layout from './components/layout/Layout';
-import { LandingPage, LoginPage, SignUpPage } from './pages/Auth';
-import { Dashboard } from './pages/Dashboard';
-import { Room } from './pages/Room';
-import { Practice } from './pages/Practice';
-import { QuestionBank } from './pages/QuestionBank';
-import { HostJoin } from './pages/HostJoin';
-import { AnalyticsHub } from './pages/AnalyticsHub';
-import { Support } from './pages/Placeholders';
-import { History } from './pages/History';
-import { Report } from './pages/Report';
-import { Settings } from './pages/Settings';
+// Layouts
+import PublicLayout from './layouts/PublicLayout';
+import StudentLayout from './layouts/StudentLayout';
+import RecruiterLayout from './layouts/RecruiterLayout';
 
-export const ColorModeContext = createContext({ toggleColorMode: () => {} });
+// Pages
+import Landing from './pages/Landing';
+import Features from './pages/Features';
+import Pricing from './pages/Pricing';
+import About from './pages/About';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ForgotPwd from './pages/ForgotPwd';
+import ResetPwd from './pages/ResetPwd';
+import StudentDash from './pages/StudentDash';
+import RecruiterDash from './pages/RecruiterDash';
+import AIInterview from './pages/AIInterview';
+import CodingAssess from './pages/CodingAssess';
+import PracticeArena from './pages/PracticeArena';
+import ResumeAnalyzer from './pages/ResumeAnalyzer';
+import LiveMonitoring from './pages/LiveMonitoring';
+import Reports from './pages/Reports';
+import Analytics from './pages/Analytics';
+import Notifications from './pages/Notifications';
+import Profile from './pages/Profile';
+import QuestionBank from './pages/QuestionBank';
+import Settings from './pages/Settings';
+import Candidates from './pages/Candidates';
+import StudentReports from './pages/StudentReports';
 
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
-  if (!user) return <Navigate to="/login" />;
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  
+  if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
+  
+  const role = user.role || 'Candidate'; // Default to candidate if missing
+  
+  if (allowedRoles && !allowedRoles.includes(role)) {
+    if (role === 'Recruiter' || role === 'Admin') {
+      return <Navigate to="/recruiter/dashboard" replace />;
+    } else {
+      return <Navigate to="/student/dashboard" replace />;
+    }
+  }
+  
   return children;
 };
 
-function App() {
-  const [mode, setMode] = useState('light');
-
-  const colorMode = useMemo(() => ({
-    toggleColorMode: () => {
-      setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-    },
-  }), []);
-
-  const theme = useMemo(() => {
-    // Premium UI Rules: Custom soft shadows
-    const lightShadows = [
-      'none',
-      '0px 2px 4px rgba(15, 23, 42, 0.04)',
-      '0px 4px 6px rgba(15, 23, 42, 0.06)',
-      '0px 10px 15px rgba(15, 23, 42, 0.08)',
-      '0px 20px 25px rgba(15, 23, 42, 0.1)',
-      ...Array(20).fill('none') // Fill remaining MUI shadows
-    ];
-    
-    const darkShadows = [
-      'none',
-      '0px 2px 4px rgba(0, 0, 0, 0.2)',
-      '0px 4px 6px rgba(0, 0, 0, 0.3)',
-      '0px 10px 15px rgba(0, 0, 0, 0.4)',
-      '0px 20px 25px rgba(0, 0, 0, 0.5)',
-      ...Array(20).fill('none')
-    ];
-
-    return createTheme({
-      palette: {
-        mode,
-        ...(mode === 'light'
-          ? {
-              primary: { main: '#4F46E5' },
-              background: { default: '#F8FAFC', paper: '#FFFFFF' },
-              text: { primary: '#1E293B', secondary: '#64748B' }, // Subdued typography
-              divider: '#E2E8F0',
-            }
-          : {
-              primary: { main: '#8B5CF6' },
-              background: { default: '#0F172A', paper: '#1E293B' }, // Surface colors
-              text: { primary: '#F8FAFC', secondary: '#94A3B8' },
-              divider: '#334155',
-            }),
-      },
-      typography: {
-        fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-        button: { textTransform: 'none', fontWeight: 600 },
-        h3: { color: mode === 'light' ? '#0F172A' : '#F8FAFC' },
-        h5: { color: mode === 'light' ? '#1E293B' : '#F8FAFC' },
-      },
-      shape: { borderRadius: 16 }, // Rule 2: Round the corners (16px)
-      shadows: mode === 'light' ? lightShadows : darkShadows, // Rule 1: Custom Shadows
-      components: {
-        MuiPaper: {
-          styleOverrides: {
-            root: {
-              backgroundImage: 'none', // Remove default MUI dark mode gradient on surfaces
-            }
-          }
-        }
-      }
-    });
-  }, [mode]);
+const AnimatedRoutes = () => {
+  const location = useLocation();
 
   return (
-    <ColorModeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Router>
-          <Layout>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignUpPage />} />
-              
-              {/* Protected Routes */}
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
-              <Route path="/host-join" element={<ProtectedRoute><HostJoin /></ProtectedRoute>} />
-              <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
-              <Route path="/analytics-hub" element={<ProtectedRoute><AnalyticsHub /></ProtectedRoute>} />
-              <Route path="/questions" element={<ProtectedRoute><QuestionBank /></ProtectedRoute>} />
-              <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              <Route path="/report/:id" element={<ProtectedRoute><Report /></ProtectedRoute>} />
-              
-              {/* Full Screen Room Route */}
-              <Route path="/room/:id" element={<ProtectedRoute><Room /></ProtectedRoute>} />
-            </Routes>
-          </Layout>
-        </Router>
-      </ThemeProvider>
-    </ColorModeContext.Provider>
+    <Routes location={location}>
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<Landing />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/about" element={<About />} />
+      </Route>
+
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPwd />} />
+      <Route path="/reset-password" element={<ResetPwd />} />
+      
+      <Route element={<ProtectedRoute allowedRoles={['Candidate', 'Student']}><StudentLayout /></ProtectedRoute>}>
+        <Route path="/student/dashboard" element={<StudentDash />} />
+        <Route path="/student/practice" element={<PracticeArena />} />
+        <Route path="/student/interview" element={<AIInterview />} />
+        <Route path="/student/assessment" element={<CodingAssess />} />
+        <Route path="/student/reports" element={<StudentReports />} />
+        <Route path="/student/profile" element={<Profile />} />
+        <Route path="/student/settings" element={<Settings />} />
+      </Route>
+
+      <Route element={<ProtectedRoute allowedRoles={['Recruiter', 'Admin']}><RecruiterLayout /></ProtectedRoute>}>
+        <Route path="/recruiter/dashboard" element={<RecruiterDash />} />
+        <Route path="/recruiter/candidates" element={<Candidates />} />
+        <Route path="/recruiter/resume-analyzer" element={<ResumeAnalyzer />} />
+        <Route path="/recruiter/live-monitoring" element={<LiveMonitoring />} />
+        <Route path="/recruiter/reports" element={<Reports />} />
+        <Route path="/recruiter/analytics" element={<Analytics />} />
+        <Route path="/recruiter/questions" element={<QuestionBank />} />
+        <Route path="/recruiter/profile" element={<Profile />} />
+        <Route path="/recruiter/settings" element={<Settings />} />
+      </Route>
+
+      <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+    </Routes>
+  );
+};
+
+function App() {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Listen for auth state changes (crucial for Google OAuth redirects)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        // Fetch user profile for role
+        const { data: profile } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        const userWithRole = { 
+          ...session.user, 
+          role: profile?.role || 'Candidate' 
+        };
+
+        dispatch(setCredentials({
+          user: userWithRole,
+          token: session.access_token,
+        }));
+      } else {
+        dispatch(logout());
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      socketClient.connectBase();
+    } else {
+      socketClient.disconnectAll();
+    }
+  }, [isAuthenticated]);
+
+  return (
+    <div className="antialiased selection:bg-emerald-500/30 selection:text-emerald-500">
+      <AnimatedRoutes />
+    </div>
   );
 }
 

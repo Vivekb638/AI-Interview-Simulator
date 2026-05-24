@@ -1,0 +1,89 @@
+.cmdk-root {
+  max-width: 600px;
+  width: 100%;
+  background: transparent;
+  padding: 8px;
+}
+
+.cmdk-input-wrapper {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+}
+
+.cmdk-search-icon {
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-right: 12px;
+}
+
+.cmdk-root [cmdk-input] {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 1.1rem;
+  font-family: inherit;
+}
+
+.cmdk-root [cmdk-input]::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.cmdk-list {
+  max-height: 400px;
+  overflow: auto;
+  padding: 8px 0;
+}
+
+.cmdk-root [cmdk-empty] {
+  padding: 32px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+}
+
+.cmdk-root [cmdk-group-heading] {
+  padding: 8px 16px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cmdk-root [cmdk-item] {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+  cursor: pointer;
+  border-radius: 8px;
+  margin: 0 8px;
+  transition: all 0.1s ease;
+}
+
+.cmdk-root [cmdk-item][aria-selected="true"] {
+  background: rgba(139, 92, 246, 0.2); /* Purple tint */
+  color: #fff;
+}
+
+.cmdk-root [cmdk-item]:active {
+  background: rgba(139, 92, 246, 0.3);
+}
+
+.cmdk-item-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.cmdk-root [cmdk-item][aria-selected="true"] .cmdk-item-icon {
+  opacity: 1;
+}

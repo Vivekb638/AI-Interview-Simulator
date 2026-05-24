@@ -56,6 +56,30 @@ const HostPanel = ({ roomId }) => {
         <AdminPanelSettingsIcon /> Interviewer Controls
       </Typography>
 
+      <Box sx={{ bgcolor: 'background.default', p: 1.5, borderRadius: 1, borderLeft: '4px solid', borderLeftColor: 'primary.main', display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Typography variant="subtitle2">Room Invitation</Typography>
+        <Typography variant="body2" color="text.secondary">Share this link with the candidate:</Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <input 
+            type="text" 
+            readOnly 
+            value={window.location.href} 
+            style={{ flex: 1, padding: '6px 12px', borderRadius: '4px', border: '1px solid #ccc', backgroundColor: 'transparent', color: 'inherit' }}
+          />
+          <Button 
+            variant="contained" 
+            size="small" 
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              alert("Link copied to clipboard!");
+            }}
+            sx={{ textTransform: 'none' }}
+          >
+            Copy Link
+          </Button>
+        </Box>
+      </Box>
+
       <Box sx={{ bgcolor: 'background.default', p: 1.5, borderRadius: 1, borderLeft: '4px solid', borderLeftColor: 'error.main' }}>
         <Typography variant="subtitle2" gutterBottom>Proctoring Alerts</Typography>
         {cheatWarnings.length === 0 ? (
