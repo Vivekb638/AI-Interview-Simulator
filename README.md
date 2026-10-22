@@ -87,7 +87,7 @@ Install the following before running the project:
 -   Node.js and npm
 -   A Supabase project
 -   API credentials for an AI provider, if AI feedback is enabled
--   Git (optional, for cloning the repository)
+-   Git 
 
 ## Getting Started
 
