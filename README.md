@@ -3,7 +3,7 @@
 An AI-powered interview practice platform that helps candidates prepare
 for technical and behavioral interviews. Users can practice interview
 questions, submit answers, and review feedback to improve their
-confidence and interview performance.
+confidence and interview 
 
 ## Features
 
